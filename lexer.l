@@ -8,8 +8,8 @@
 #include <string>
 %}
 
-identifier          ([_a-z])+
-number              ("-"?[0-9])+
+pidentifier         ([_a-z])+
+number              ("-"?([0-9])+)
 whitespace          ([ \t\r\n])+
 semicolon           ";"
 colon               ":"
@@ -23,6 +23,22 @@ r_bracket           ")"
 "DECLARE"           { return DECLARE; }
 "BEGIN"             { return BEGINN; }
 "END"               { return END; }
+
+"IF"                { return IF; }
+"THEN"              { return THEN; }
+"ELSE"              { return ELSE; } 
+"ENDIF"             { return ENDIF; }
+
+"WHILE"             { return WHILE; }
+"DO"                { return DO; }
+"ENDWHILE"          { return ENDWHILE; }
+"ENDDO"             { return ENDDO; }
+
+"FOR"               { return FOR; }
+"FROM"              { return FROM; }
+"TO"                { return TO; }
+"DOWNTO"            { return DOWNTO; }
+"ENDFOR"            { return ENDFOR; }
 
 "ASSIGN"            { return ASSIGN; }
 "READ"              { return READ; }
@@ -40,9 +56,11 @@ r_bracket           ")"
 "LEQ"               { return LEQ; }
 "GEQ"               { return GEQ; }
 
-{number}	        {  yylval.num = std::stoll(yytext); return num; }
-{identifier}        {
-                         
+{number}	        {  
+                        yylval.str = (char *)strdup(yytext);
+                        return num;
+                    }
+{pidentifier}       {     
                         yylval.str = (char *)strdup(yytext);
                         return pidentifier;
                     }
@@ -55,10 +73,16 @@ r_bracket           ")"
 "["                 { BEGIN(comment); }
 <comment>{
     "]"             { BEGIN(INITIAL); }
-    (\n|.)          
+    (\n|.)          ;
     <<EOF>>         { printf("Error: comment closure missing \"]\"\n"); yyterminate(); }
 }
 
 {whitespace}        ;
-.                   { return ERROR; }
+.                   { yylval.str = (char *)strdup(yytext); return ERROR; }
 %%
+
+// dodać jak pusty program bo się wywala XD (np jak wszystko zakomciowane)
+
+// dodać duże litery w zmiennych ale nie można bo ma być [_a-z]+;
+
+// nie mogą się nazywać tak jak tokeny?

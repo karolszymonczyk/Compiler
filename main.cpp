@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
     if (argc != 3)
     {
-        cerr << "incorrect args number" << endl;
+        cerr << "\033[1;31mError\033[0m incorrect args number" << endl;
         exit(1);
     }
 
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    cout << "\nCompiling..." << endl;
+    cout << "\n\33[1;37mCompiling...\33[0m" << endl;
 
     int result = yyparse();
 
@@ -37,13 +37,13 @@ int main(int argc, char **argv)
 
     if (result == 0)
     {
-        cout << "\nCompiling successfull!" << endl;
-        cout << "Executed lines: " << yylineno << "\n"
+        cout << "\n\033[1;32mCompilation completed successfully!\033[0m" << endl;
+        cout << "\33[1;37mExecuted lines: " << yylineno << "\33[0m\n"
              << endl;
     }
     else
     {
-        cout << "\nCompiling error.\n"
+        cout << "\n\033[1;31mCompilation error\033[0m\n"
              << endl;
              exit(1);
     }
