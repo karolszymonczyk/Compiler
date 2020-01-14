@@ -80,9 +80,3 @@ r_bracket           ")"
 {whitespace}        ;
 .                   { yylval.str = (char *)strdup(yytext); return ERROR; }
 %%
-
-// dodać jak pusty program bo się wywala XD (np jak wszystko zakomciowane)
-
-// dodać duże litery w zmiennych ale nie można bo ma być [_a-z]+;
-
-// nie mogą się nazywać tak jak tokeny?

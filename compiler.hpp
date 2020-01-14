@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -9,9 +11,6 @@
 
 using namespace std;
 
-// todo dodać sobie currIndex żeby nie robić niepotrzebnych loadów (może być 0 jak mam jakąś nową wartość nie zapisaną jeszcze)
-// todo podobnie można z currVal ale to dużo roboty xD
-
 struct Variable {
     char const *name;
     char const *type; // NUM, ARR, ARR VAR, ITR
@@ -19,7 +18,7 @@ struct Variable {
     long long size; // dla tablic
     long long startIdx; // początkowy index tablicy
     bool init;
-    long long value; // na razie dla num
+    long long value; // dla num
     char const *iterator; // dla pętli for
 };
 
@@ -64,6 +63,7 @@ void endDoCmd();
 void createVariable(Variable *var, char *name, char const *type);
 void createArray(Variable *var, char *name, long long size, long long start, char const *type);
 Variable tempVar(long long a);
+Variable prepareCond(Variable a, Variable b);
 Variable checkInit(Variable var);
 Variable getVar(char *name);
 Variable setArr(char *name, char *id);

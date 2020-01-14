@@ -9,7 +9,7 @@ using namespace std;
 int yylex();
 int yyparse();
 void yyerror(string);
-extern FILE *yyin; // nie potrzebne? posprzątać tu
+extern FILE *yyin;
 extern int yylineno;
 %}
 
@@ -43,15 +43,15 @@ extern int yylineno;
 %start program
 
 %%
-program:            DECLARE declarations                                        { startProgram(); }
-                    BEGINN commands END                                         { endProgram(); }
-                    | BEGINN commands END                                       { endProgram(); }
+program:            DECLARE declarations                                            { startProgram(); }
+                    BEGINN commands END                                             { endProgram(); }
+                    | BEGINN commands END                                           { endProgram(); }
 ;
 
-declarations:       declarations COMMA pidentifier                              { declareVar($3); }
-                    | declarations COMMA pidentifier LBR num COLON num RBR      { declareArr($3, stoll($5), stoll($7)); }
-                    | pidentifier                                               { declareVar($1); }
-                    | pidentifier LBR num COLON num RBR                         { declareArr($1, stoll($3), stoll($5)); }
+declarations:       declarations COMMA pidentifier                                  { declareVar($3); }
+                    | declarations COMMA pidentifier LBR num COLON num RBR          { declareArr($3, stoll($5), stoll($7)); }
+                    | pidentifier                                                   { declareVar($1); }
+                    | pidentifier LBR num COLON num RBR                             { declareArr($1, stoll($3), stoll($5)); }
 ;
 
 commands:           commands command
@@ -64,8 +64,8 @@ command:            identifier ASSIGN expression SEMICOLON                      
                     | IF condition THEN commands ENDIF                              { ifCmd(); }
                     | WHILE                                                         { whileCmd(); }
                     condition DO commands ENDWHILE                                  { endWhileCmd(); }
-                    | DO                                                            { doCmd(); }
-                    commands WHILE condition ENDDO                                  { endDoCmd(); }
+                    | DO                                                            { whileCmd(); }
+                    commands WHILE condition ENDDO                                  { endWhileCmd(); }
                     | FOR pidentifier FROM value TO value DO                        { forToCmd($2, $4, $6); }
                     commands ENDFOR                                                 { endForCmd(); }
                     | FOR pidentifier FROM value DOWNTO value DO                    { forDowntoCmd($2, $4, $6); }

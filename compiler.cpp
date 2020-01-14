@@ -1,24 +1,9 @@
 #include "compiler.hpp"
 
-// W CREATE NUM zrobić szukanie w constants, nie trzeba zmieniać kodu za bardzo
-
-// MOŻNA zrobić funckę to zarządzania pamięcią i po usunięciu iteratora
-// skoczyć na jego miejsce i po przypisaniu czegos tam wrócić do normalnego
-// ale może nieźle zamieszać XD
-
-//JAK w declaration jest ostatnio to daje do następnej linii błąd?? e1
-// jak nie ma zmiennej w declaration to wywala zrzut pamięci xD
-
-// trzeba powkładać do elsów wszystko
-// jakieś dziwne równania z tab(a)? np a ASSING tab(a) + a
-
 extern int yylineno;
 
 long long memoryIndex = 3;
 long long cmdIndex = 0;
-// int loadedIndex = 1; // chyba nie potrzbne jak nie będę cudować z memoryIndex xD
-// int currValue = 0; // będzie trzeba jakoś trzymać i zerować po LOAD
-// albo zawsze po operacji a zapisywać jak STORE
 
 char const *arrVarType = "ARR VAR";
 char const *arrType = "ARR";
@@ -29,9 +14,7 @@ char const *itrType = "ITR";
 vector<string> code;
 map<string, Variable> variables;
 map<long long, long long> constants;
-// można tworzyć liczby przez zrobienie brakującej i ją dodać lub odjąć
-// ITERATORS sb zrobić
-vector<Variable> jumps; // vector with push_back pop_back bo można iterować
+vector<Variable> jumps;
 
 void startProgram()
 {
@@ -103,7 +86,7 @@ void initVar(Variable var)
 }
 
 void readCmd(Variable var)
-{ // warunek jeśli była zadeklarowana ale nie bd działać dla arr(var)?
+{
     insertCmd("GET");
     storeVar(var);
     if (var.type != arrVarType && var.type != arrType)
@@ -117,7 +100,7 @@ void writeCmd(Variable var)
     if (var.type == numType)
     {
         createNum(var.value);
-        insertCmd("PUT"); // MOŻNA ZAPISYWAĆ W getTemp gdzieś te numerki stworzone
+        insertCmd("PUT");
     }
     else if (var.type == arrType)
     {
@@ -130,7 +113,7 @@ void writeCmd(Variable var)
         insertCmd("PUT");
     }
     else if (!var.init)
-    { // CHYBA WGL NIE POTRZEBNE BO SPRAWDZAM WCZEŚNIEJ PRZY PIDIDEN
+    {
         string message = "Variable \"" + string(var.name) + string("\" was not initialised");
         printError(message);
     }
@@ -153,9 +136,8 @@ void valCmd(Variable var)
     }
 }
 
-void plusCmd(Variable a, Variable b) //ulepszyć i minus też jak różnica < 10 to dodawać 10razy INC
+void plusCmd(Variable a, Variable b)
 {
-    // dla bezpieczeństwa ale trzeba zoptymalizować XD
     if (a.type == numType && a.value == 0)
     {
         if (b.type == numType)
@@ -190,7 +172,7 @@ void plusCmd(Variable a, Variable b) //ulepszyć i minus też jak różnica < 10
     {
         if (a.type == numType)
         {
-            if (llabs(a.value) < 10) //  tego IFA DODAŁEM XD
+            if (llabs(a.value) < 10) // added
             {
                 loadVar(b);
                 string cmd = a.value > 0 ? "INC" : "DEC";
@@ -216,7 +198,7 @@ void plusCmd(Variable a, Variable b) //ulepszyć i minus też jak różnica < 10
         }
         else if (b.type == numType)
         {
-            if (llabs(b.value) < 10) //  tego IFA DODAŁEM XD
+            if (llabs(b.value) < 10) // added
             {
                 loadVar(a);
                 string cmd = b.value > 0 ? "INC" : "DEC";
@@ -242,7 +224,6 @@ void plusCmd(Variable a, Variable b) //ulepszyć i minus też jak różnica < 10
         }
         else
         {
-            //todo trzeba sprawdzić czy nie jest aktualnie załadowany i ew zmienić kolejność dodawania
             if (a.type == arrVarType && b.type == arrVarType)
             {
                 loadVar(a);
@@ -266,7 +247,6 @@ void plusCmd(Variable a, Variable b) //ulepszyć i minus też jak różnica < 10
 
 void minusCmd(Variable a, Variable b)
 {
-    // dla bezpieczeństwa ale trzeba zoptymalizować XD
     if (a.type == numType && a.value == 0)
     {
         if (b.type == numType)
@@ -309,20 +289,9 @@ void minusCmd(Variable a, Variable b)
         createNum(result);
     }
     else
-    { // zopytamlizować jak a lub b jest zerem (JEDEN JUMP) i dodawanie też
+    {
         if (a.type == numType)
         {
-            // if (llabs(a.value) < 10) //  tego IFA DODAŁEM XD
-            // {
-            //     loadVar(b);
-            //     string cmd = a.value < 0 ? "INC" : "DEC";
-            //     for (long long i = 0; i < llabs(a.value); i++)
-            //     {
-            //         insertCmd(cmd);
-            //     }
-            // }
-            // else
-            // {
             if (b.type == arrVarType)
             {
                 loadVar(b);
@@ -335,11 +304,10 @@ void minusCmd(Variable a, Variable b)
                 createNum(a.value);
                 insertCmd("SUB " + to_string(b.index));
             }
-            // }
         }
         else if (b.type == numType)
         {
-            if (llabs(b.value) < 10) //  tego IFA DODAŁEM XD
+            if (llabs(b.value) < 10) // added
             {
                 loadVar(a);
                 string cmd = b.value < 0 ? "INC" : "DEC";
@@ -385,15 +353,12 @@ void minusCmd(Variable a, Variable b)
                 loadVar(a);
                 insertCmd("SUB " + to_string(b.index));
             }
-            //todo trzeba sprawdzić czy nie jest aktualnie załadowany i ew zmienić kolejność dodawania
         }
     }
 }
 
-void timesCmd(Variable a, Variable b) // nie zmieniane jeszcze (dodać laodVar storeVar)
+void timesCmd(Variable a, Variable b)
 {
-    // dla bezpieczeństwa ale trzeba zoptymalizować XD
-
     if ((a.type == numType && a.value == 0) || (b.type == numType && b.value == 0))
     {
         resetCurr();
@@ -406,16 +371,7 @@ void timesCmd(Variable a, Variable b) // nie zmieniane jeszcze (dodać laodVar s
         createNum(result);
     }
     else
-    { //dwa razy jest sub 0 bez sensu (to tutaj i z createNum)
-
-        // resetCurr();
-        // // STORE 5 #wynik
-        // insertCmd("STORE " + to_string(memoryIndex)); // 5
-        // // STORE 6 #flaga
-        // insertCmd("STORE " + to_string(memoryIndex + 1)); // 6
-
-        // resetCurr(); // nie jest potrzebne CHYBA XD
-
+    {
         if (a.type == numType)
         {
             createNum(a.value);
@@ -504,8 +460,8 @@ void divCmd(Variable a, Variable b)
     if (a.type == numType && b.type == numType)
     {
         long long result = a.value / b.value;
-        if (a.value * b.value < 0) {
-            cout << a.value * b.value << endl;
+        if (a.value * b.value < 0)
+        {
             result--;
         }
         createNum(result);
@@ -533,7 +489,7 @@ void divCmd(Variable a, Variable b)
         insertCmd("INC");
         insertCmd("STORE " + to_string(memoryIndex + 2));
         loadVar(a);
-        insertCmd("JZERO " + to_string(cmdIndex + 62)); // XXX +6
+        insertCmd("JZERO " + to_string(cmdIndex + 61));
         insertCmd("STORE " + to_string(memoryIndex + 3));
         insertCmd("JPOS " + to_string(cmdIndex + 8));
         resetCurr();
@@ -543,9 +499,9 @@ void divCmd(Variable a, Variable b)
         insertCmd("INC");
         insertCmd("STORE " + to_string(memoryIndex + 1));
         insertCmd("LOAD " + to_string(memoryIndex + 3));
-        insertCmd("STORE " + to_string(memoryIndex + 4)); // reszta
+        insertCmd("STORE " + to_string(memoryIndex + 4));
         loadVar(b);
-        insertCmd("JZERO " + to_string(cmdIndex + 50)); // XXX +6
+        insertCmd("JZERO " + to_string(cmdIndex + 49));
         insertCmd("STORE " + to_string(memoryIndex + 5));
         insertCmd("JPOS " + to_string(cmdIndex + 7));
         resetCurr();
@@ -583,15 +539,15 @@ void divCmd(Variable a, Variable b)
         insertCmd("JZERO " + to_string(cmdIndex + 2));
         insertCmd("JUMP " + to_string(cmdIndex - 16));
         insertCmd("LOAD " + to_string(memoryIndex + 1));
-        insertCmd("JNEG " + to_string(cmdIndex + 10)); // XXX + 5
-        insertCmd("JPOS " + to_string(cmdIndex + 9)); // XXX + 5
+        insertCmd("JNEG " + to_string(cmdIndex + 10));
+        insertCmd("JPOS " + to_string(cmdIndex + 9));
         resetCurr();
         insertCmd("SUB " + to_string(memoryIndex));
-        insertCmd("STORE " + to_string(memoryIndex)); /// XXX
-        insertCmd("LOAD " + to_string(memoryIndex + 4)); // XXX reszta
-        insertCmd("JNEG " + to_string(cmdIndex + 4)); // XXX do LOAD 1
-        insertCmd("LOAD " + to_string(memoryIndex)); // XXX wynik
-        insertCmd("DEC"); // XXX
+        insertCmd("STORE " + to_string(memoryIndex));
+        insertCmd("LOAD " + to_string(memoryIndex + 4));
+        insertCmd("JNEG " + to_string(cmdIndex + 4));
+        insertCmd("LOAD " + to_string(memoryIndex));
+        insertCmd("DEC");
         insertCmd("JUMP " + to_string(cmdIndex + 2));
         insertCmd("LOAD " + to_string(memoryIndex));
     }
@@ -698,42 +654,15 @@ void modCmd(Variable a, Variable b)
     }
 }
 
-// pierwsze wejście true, drugie false
 void eqCmd(Variable a, Variable b)
 {
-    //MOŻNA to uprościć jakoś
-
-    if (a.type == numType)
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType)
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JZERO " + to_string(cmdIndex + 2)); // JUMP TRUE
-    // insertCmd("JUMP " + to_string(cmdIndex + 2));  // JUMP FALSE
-    insertCmd("JUMP false");   // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1; // gdzie jest jump
+    insertCmd("JZERO " + to_string(cmdIndex + 2));
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -741,37 +670,14 @@ void eqCmd(Variable a, Variable b)
 
 void neqCmd(Variable a, Variable b)
 {
-    if (a.type == numType)
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType)
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JNEG " + to_string(cmdIndex + 3)); // JUMP TRUE
-    insertCmd("JPOS " + to_string(cmdIndex + 2)); // JUMP TRUE
-    insertCmd("JUMP false");                      // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1;                    // gdzie jest jump
+    insertCmd("JNEG " + to_string(cmdIndex + 3));
+    insertCmd("JPOS " + to_string(cmdIndex + 2));
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -779,36 +685,13 @@ void neqCmd(Variable a, Variable b)
 
 void leCmd(Variable a, Variable b)
 {
-    if (a.type == numType)
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType)
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JPOS " + to_string(cmdIndex + 2)); // JUMP TRUE
-    insertCmd("JUMP false");                      // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1;                    // gdzie jest jump
+    insertCmd("JPOS " + to_string(cmdIndex + 2));
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -816,36 +699,13 @@ void leCmd(Variable a, Variable b)
 
 void geCmd(Variable a, Variable b)
 {
-    if (a.type == numType) // JUŻ KTÓRYŚ RAZ TO WKLEJAM XD
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType) // TO TEŻ XD
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JNEG " + to_string(cmdIndex + 2)); // JUMP TRUE
-    insertCmd("JUMP false");                      // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1;                    // gdzie jest jump
+    insertCmd("JNEG " + to_string(cmdIndex + 2));
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -853,37 +713,14 @@ void geCmd(Variable a, Variable b)
 
 void leqCmd(Variable a, Variable b)
 {
-    if (a.type == numType) // JUŻ KTÓRYŚ RAZ TO WKLEJAM XD
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType) // TO TEŻ XD
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JPOS " + to_string(cmdIndex + 3)); // JUMP TRUE
+    insertCmd("JPOS " + to_string(cmdIndex + 3));
     insertCmd("JZERO " + to_string(cmdIndex + 2));
-    insertCmd("JUMP false");   // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1; // gdzie jest jump
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -891,37 +728,14 @@ void leqCmd(Variable a, Variable b)
 
 void geqCmd(Variable a, Variable b)
 {
-    if (a.type == numType) // JUŻ KTÓRYŚ RAZ TO WKLEJAM XD
-    {
-        createNum(a.value);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-    else if (a.type == arrVarType)
-    {
-        loadVar(a);
-        insertCmd("STORE " + to_string(memoryIndex));
-        a.index = memoryIndex;
-        memoryIndex++; // tutaj trzeba bo przy pętlach by się wywróciło
-    }
-
+    a = prepareCond(a, b);
     Variable jump;
 
-    if (b.type == numType) // TO TEŻ XD
-    {
-        createNum(b.value); // poprawić jak będę zapisywał stałe
-    }
-    else
-    {
-        loadVar(b);
-    }
-
     insertCmd("SUB " + to_string(a.index));
-    insertCmd("JNEG " + to_string(cmdIndex + 3)); // JUMP TRUE
+    insertCmd("JNEG " + to_string(cmdIndex + 3));
     insertCmd("JZERO " + to_string(cmdIndex + 2));
-    insertCmd("JUMP false");   // JUMP FALSE ZROBIĆ DO TEGO FUNKCJE
-    jump.index = cmdIndex - 1; // gdzie jest jump
+    insertCmd("JUMP false");
+    jump.index = cmdIndex - 1;
     jump.size = 1;
 
     jumps.push_back(jump);
@@ -943,16 +757,14 @@ void elseCmd()
     replaceCmd(jump.index, "JUMP " + to_string(jump.index + jump.size));
 
     Variable newJump;
-    newJump.index = cmdIndex - 1; // gdzie jest jump
+    newJump.index = cmdIndex - 1;
     newJump.size = 1;
 
     jumps.push_back(newJump);
 }
 
-void forToCmd(char *it, Variable from, Variable to) // jakąś cześć wspólną dać do funkcji tych FORÓW??
+void forToCmd(char *it, Variable from, Variable to)
 {
-    // dodać warunki jak dwie liczby ITD.
-
     if (variables.find(it) != variables.end())
     {
         string message = "Variable \"" + string(it) + string("\" already declared");
@@ -996,20 +808,18 @@ void forToCmd(char *it, Variable from, Variable to) // jakąś cześć wspólną
     insertCmd("SUB " + to_string(itr.index));
     insertCmd("JPOS " + to_string(cmdIndex + 2));
     insertCmd("JUMP end");
-    jump.index = cmdIndex - 1; // gdzie jest jump
+    jump.index = cmdIndex - 1;
     jump.size = 1;
-    jump.iterator = itr.name; // DODANE
+    jump.iterator = itr.name;
 
     jumps.push_back(jump);
     loadVar(itr);
-    insertCmd("INC"); // bo TO
+    insertCmd("INC");
     storeVar(itr);
 }
 
 void forDowntoCmd(char *it, Variable from, Variable to)
 {
-    // dodać warunki jak dwie liczby ITD.
-
     if (variables.find(it) != variables.end())
     {
         string message = "Variable \"" + string(it) + string("\" already declared");
@@ -1051,15 +861,15 @@ void forDowntoCmd(char *it, Variable from, Variable to)
 
     loadVar(fin);
     insertCmd("SUB " + to_string(itr.index));
-    insertCmd("JNEG " + to_string(cmdIndex + 2)); // R
+    insertCmd("JNEG " + to_string(cmdIndex + 2));
     insertCmd("JUMP end");
-    jump.index = cmdIndex - 1; // gdzie jest jump
+    jump.index = cmdIndex - 1;
     jump.size = 1;
-    jump.iterator = itr.name; // DODANE
+    jump.iterator = itr.name;
 
     jumps.push_back(jump);
     loadVar(itr);
-    insertCmd("DEC"); // bo DONTO  Różnica
+    insertCmd("DEC");
     storeVar(itr);
 }
 
@@ -1067,10 +877,10 @@ void endForCmd()
 {
     Variable jump = jumps.back();
     jumps.pop_back();
-    variables.erase(jump.iterator); // DODANE
+    variables.erase(jump.iterator);
     replaceCmd(jump.index, "JUMP " + to_string(jump.index + jump.size + 1));
 
-    insertCmd("JUMP " + to_string(jump.index - 3)); //skok do load(itr) ZMIANA
+    insertCmd("JUMP " + to_string(jump.index - 3));
 }
 
 void whileCmd()
@@ -1084,27 +894,6 @@ void whileCmd()
 }
 
 void endWhileCmd()
-{
-    Variable jump = jumps.back();
-    jumps.pop_back();
-    replaceCmd(jump.index, "JUMP " + to_string(jump.index + jump.size + 1));
-
-    Variable checkPoint = jumps.back();
-    jumps.pop_back();
-    insertCmd("JUMP " + to_string(checkPoint.index));
-}
-
-void doCmd() // to samo co whileCmd
-{
-    Variable jump;
-
-    jump.index = cmdIndex;
-    jump.size = 1;
-
-    jumps.push_back(jump);
-}
-
-void endDoCmd() // to samo co endWhileCmd
 {
     Variable jump = jumps.back();
     jumps.pop_back();
@@ -1155,6 +944,35 @@ Variable tempVar(long long a)
     return var;
 }
 
+Variable prepareCond(Variable a, Variable b)
+{
+    if (a.type == numType)
+    {
+        createNum(a.value);
+        insertCmd("STORE " + to_string(memoryIndex));
+        a.index = memoryIndex;
+        memoryIndex++;
+    }
+    else if (a.type == arrVarType)
+    {
+        loadVar(a);
+        insertCmd("STORE " + to_string(memoryIndex));
+        a.index = memoryIndex;
+        memoryIndex++;
+    }
+
+    if (b.type == numType)
+    {
+        createNum(b.value);
+    }
+    else
+    {
+        loadVar(b);
+    }
+
+    return a;
+}
+
 Variable checkInit(Variable var)
 {
 
@@ -1175,7 +993,7 @@ Variable getVar(char *name)
         printError(message);
     }
 
-    Variable var = variables.at(name); // można chyba od razu to zwrócić?
+    Variable var = variables.at(name);
 
     if (var.type == arrType)
     {
@@ -1186,7 +1004,7 @@ Variable getVar(char *name)
     return var;
 }
 
-Variable setArr(char *name, char *id) // sprawdzać czy jest w variables?
+Variable setArr(char *name, char *id)
 {
     if (variables.find(id) == variables.end())
     {
@@ -1196,7 +1014,7 @@ Variable setArr(char *name, char *id) // sprawdzać czy jest w variables?
 
     Variable a = variables.at(id);
 
-    if ((a.type != arrVarType || a.type != arrType) && !a.init) // chyba nie dotyczy tablic
+    if ((a.type != arrVarType || a.type != arrType) && !a.init)
     {
         string message = "Variable \"" + string(a.name) + string("\" was not initialized");
         printError(message);
@@ -1205,7 +1023,7 @@ Variable setArr(char *name, char *id) // sprawdzać czy jest w variables?
     {
         Variable arr = variables.at(name);
 
-        if (arr.type != arrType) // dodać arrVar ??
+        if (arr.type != arrType)
         {
             string message = "Variable \"" + string(name) + string("\" is not array");
             printError(message);
@@ -1223,7 +1041,7 @@ Variable setArr(char *name, char *id) // sprawdzać czy jest w variables?
         return element;
     }
 
-    return a; //zastąpić nullem?
+    return a;
 }
 
 Variable getArr(char *name, long long idx)
@@ -1249,8 +1067,6 @@ Variable getArr(char *name, long long idx)
         printError(message);
     }
 
-    // string newName = var.name + to_string(arrIdx);
-    // Variable element = variables.at(newName);
     Variable element;
     element.type = "ARR";
     element.index = var.index + arrIdx;
@@ -1262,7 +1078,7 @@ void createNum(long long a)
 {
 
     if (a == 0)
-    { // jak nie będzie coś działało to usunąć korzystanie z zapisanych const
+    {
         insertCmd("SUB 0");
         return;
     }
@@ -1277,25 +1093,20 @@ void createNum(long long a)
         return;
     }
 
-    // DODAĆ JESZCZE W zasięgu 10? albo wgl najbliższą i na niej jakoś bazować
     if (constants.find(a) != constants.end())
     {
-        // cout << yylineno << " : LOAD " << a << " from index " << to_string(constants.at(a)) << endl;
         insertCmd("LOAD " + to_string(constants.at(a)));
         return;
     }
 
-    if (llabs(a) > 10000 - 22) //PRZEZ TO MOŻE NIE DZIAŁAĆ (CAŁE XD) 70
+    if (llabs(a) > 10000 - 22)
     {
         for (long long i = a - 22; i <= a + 22; i++)
         {
-            // long long diff = a + i;
-            if (constants.find(i) != constants.end()) // to samo co u góry?
+            if (constants.find(i) != constants.end())
             {
-                // cout << yylineno << " : LOAD " << i << " from index " << to_string(constants.at(a)) << endl;
                 insertCmd("LOAD " + to_string(constants.at(i)));
                 string cmd = i < a ? "INC" : "DEC";
-                cout << i << endl;
                 for (long long j = 0; j < llabs(i - a); j++)
                 {
                     insertCmd(cmd);
@@ -1306,16 +1117,7 @@ void createNum(long long a)
     }
 
     string cmd = a > 0 ? "INC" : "DEC";
-    resetCurr(); //tymczasowe
-    // później sprawdzanie co jest na stosie i czy jest większe czy mniejsze itd
-    // można przy zapisywaniu zmiennych dodawać im też value i jak się różnią
-    // o odpowiednią ilość to ladować najbliższą i odpowiednio znajdywać
-
-    // if (a == 0)
-    // {
-    //     createConstant(a);
-    //     return;
-    // }
+    resetCurr();
 
     if (llabs(a) <= 23)
     {
@@ -1326,8 +1128,6 @@ void createNum(long long a)
     }
     else
     {
-        // insertCmd("INC");
-        // insertCmd("STORE " + to_string(memoryIndex));
         list<string> steps = calcSteps(llabs(a), cmd);
         if (a < 0)
         {
@@ -1349,7 +1149,6 @@ void createNum(long long a)
 
 void createConstant(long long a)
 {
-    // cout << yylineno << " : STORE " << a  << " on index " << memoryIndex << endl;
     if (a > 10000)
     {
         insertCmd("STORE " + to_string(memoryIndex));
@@ -1381,15 +1180,10 @@ list<string> calcSteps(long long a, string cmd)
 void resetCurr()
 {
     insertCmd("SUB 0");
-    // currValue = 0;
 }
 
 void loadVar(Variable var)
 {
-    // if (currValue != var.value)
-    // {
-    // currValue = var.value;
-    // }
     if (var.type == arrVarType)
     {
         insertCmd("LOADI " + to_string(var.index));
@@ -1437,5 +1231,5 @@ void printError(string message)
     }
     cerr << endl;
 
-    exit(EXIT_FAILURE); // EXIT_SUCCESS
+    exit(EXIT_FAILURE);
 }
