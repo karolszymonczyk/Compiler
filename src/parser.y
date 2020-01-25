@@ -91,7 +91,7 @@ condition:          value EQ value                                              
 ;
 
 value:               num                                                            { $$ = tempVar(stoll($1)); }
-                    | identifier                                                    { $$ = checkInit($1); }
+                    | identifier                                                    { $$ = setUsed($1); }
 ;
 
 identifier:         pidentifier                                                     { $$ = getVar($1); }

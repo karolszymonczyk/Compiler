@@ -29,6 +29,7 @@ void startProgram()
 void endProgram()
 {
     insertCmd("HALT");
+    checkInit();
 }
 
 void declareVar(char *name)
@@ -107,18 +108,26 @@ void writeCmd(Variable var)
         loadVar(var);
         insertCmd("PUT");
     }
-    else if (var.type == arrVarType)
-    {
-        loadVar(var);
-        insertCmd("PUT");
-    }
-    else if (!var.init)
-    {
-        string message = "Variable \"" + string(var.name) + string("\" was not initialised");
-        printError(message);
-    }
+    // else if (var.type == arrVarType)
+    // {
+    //     loadVar(var);
+    //     insertCmd("PUT");
+    // }
+    // else if (!var.init)
+    // {
+    //     string message = "Variable \"" + string(var.name) + string("\" was not initialised");
+    //     printError(message);
+    // }
     else
     {
+        if (var.type != arrVarType)
+        {
+            if (var.used == false)
+            {
+                variables.at(var.name).line = yylineno;
+                variables.at(var.name).used = true;
+            }
+        }
         loadVar(var);
         insertCmd("PUT");
     }
@@ -915,6 +924,7 @@ void createVariable(Variable *var, char *name, char const *type)
     var->name = name;
     var->type = type;
     var->init = false;
+    var->used = false;
     var->index = memoryIndex;
     memoryIndex++;
 
@@ -973,13 +983,21 @@ Variable prepareCond(Variable a, Variable b)
     return a;
 }
 
-Variable checkInit(Variable var)
+Variable setUsed(Variable var)
 {
 
-    if (var.type != arrType && var.type != arrVarType && !var.init)
+    // if (var.type != arrType && var.type != arrVarType && !var.init)
+    // {
+    //     string message = "Variable \"" + string(var.name) + string("\" was not initialized");
+    //     printError(message);
+    // }
+    if (var.type != arrType && var.type != arrVarType)
     {
-        string message = "Variable \"" + string(var.name) + string("\" was not initialized");
-        printError(message);
+        if (variables.at(var.name).used == false)
+        {
+            variables.at(var.name).line = yylineno;
+            variables.at(var.name).used = true;
+        }
     }
 
     return var;
@@ -1232,4 +1250,30 @@ void printError(string message)
     cerr << endl;
 
     exit(EXIT_FAILURE);
+}
+
+void checkInit()
+{
+    map<string, Variable>::iterator it;
+
+    for (it = variables.begin(); it != variables.end(); it++)
+    {
+        // std::cout << it->first // string (key)
+        //           << " used->"
+        //           << it->second.used // string's value
+        //           << " init->"
+        //           << it->second.init
+        //           << " line->"
+        //           << it->second.line
+        //           << std::endl;
+        if (it->second.used && !it->second.init && it->second.type != arrType && it->second.type != arrVarType)
+        {
+            cerr << "\n\033[1;31mError in line: " << yylineno - 1 << "\033[0m" << endl;
+            string message = "Variable \"" + string(it->first) + string("\" was not initialized");
+            cerr << "\033[1;31m" << message << "\033[0m" << endl
+                 << endl;
+
+            exit(EXIT_FAILURE);
+        }
+    }
 }

@@ -18,6 +18,8 @@ struct Variable {
     long long size; // dla tablic
     long long startIdx; // początkowy index tablicy
     bool init;
+    bool used;
+    long long line; // do błędu assign
     long long value; // dla num
     char const *iterator; // dla pętli for
 };
@@ -64,7 +66,7 @@ void createVariable(Variable *var, char *name, char const *type);
 void createArray(Variable *var, char *name, long long size, long long start, char const *type);
 Variable tempVar(long long a);
 Variable prepareCond(Variable a, Variable b);
-Variable checkInit(Variable var);
+Variable setUsed(Variable var);
 Variable getVar(char *name);
 Variable setArr(char *name, char *id);
 Variable getArr(char *name, long long idx);
@@ -78,3 +80,4 @@ void insertCmd(string cmd);
 void refreshJumps();
 void replaceCmd(long long index, string newCmd);
 void printError(string message);
+void checkInit();

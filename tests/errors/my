@@ -1,0 +1,7 @@
+[ Błąd w linii 5: użycie niezainicjowanej zmiennej a ]
+DECLARE
+  a
+BEGIN
+  [a ASSIGN a TIMES 2;]
+  WRITE a;
+END

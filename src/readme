@@ -1,0 +1,9 @@
+Karol Szymończyk 243434
+
+lexer.l - lexer
+parser.y - parser
+compiler.hpp - deklaracje funkcji oraz zmiennych, które wykorzystuje kompiltor
+compiler.cpp - implementacje funkcji
+iofile.hpp - deklaracje funkcji do wczytywania oraz zapisywania do pliku
+iofile.cpp - implementacje funkcji do wczytywania oraz zapisywania do pliku
+main.cpp - plik uruchamiający program
